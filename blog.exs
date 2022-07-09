@@ -4,8 +4,13 @@ defmodule Blog do
   end
 
   def loop do
-    IO.puts("Hello W0rld")
+    receive do
+      any -> IO.puts("ECHO #{any}")
+    end
+
+    loop
   end
 end
 
-Enum.map(1..10, fn(_) -> Blog.start end)
+blog = Blog.start
+send(blog, "Hello world")
