@@ -1,19 +1,22 @@
 defmodule Blog do
+  use GenServer
+
+  def init(_) do
+    {:ok, Map.new}
+  end
+
   def start do
-    spawn(fn -> loop(Map.new) end)
+    GenServer.start(__MODULE__, nil)
   end
 
-  def loop(state) do
-    new_state = receive do
-      {:create, %{id: id, author: author, title: title, body: body}} -> Map.put(state, id, %{author: author, title: title, body: body})
-      _ -> raise "Unknown operation"
-    end
+  def handle_cast({:create, data}, state), do: {:noreply, Map.put(state, data.id, Map.delete(data, :id))}
+  def handle_call({:get, id}, _, state), do: {:reply, Map.get(state, id), state}
 
-    loop(new_state)
-  end
-
-  def create(pid, data), do: send(pid, {:create, data})
+  def create(pid, data), do: GenServer.cast(pid, {:create, data})
+  def get(pid, id), do: GenServer.call(pid, {:get, id})
 end
 
-blog = Blog.start
+{:ok, blog} = Blog.start
 Blog.create(blog, %{id: 1, title: "How to learn Elixir", author: "Yotsuya", body: "Fast and easy"})
+:timer.sleep(1000)
+IO.inspect(Blog.get(blog, 1))
