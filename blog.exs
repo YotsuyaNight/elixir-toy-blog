@@ -1,16 +1,19 @@
 defmodule Blog do
   def start do
-    spawn(&loop/0)
+    spawn(fn -> loop(Map.new) end)
   end
 
-  def loop do
-    receive do
-      any -> IO.puts("ECHO #{any}")
+  def loop(state) do
+    new_state = receive do
+      {:create, %{id: id, author: author, title: title, body: body}} -> Map.put(state, id, %{author: author, title: title, body: body})
+      _ -> raise "Unknown operation"
     end
 
-    loop
+    loop(new_state)
   end
+
+  def create(pid, data), do: send(pid, {:create, data})
 end
 
 blog = Blog.start
-send(blog, "Hello world")
+Blog.create(blog, %{id: 1, title: "How to learn Elixir", author: "Yotsuya", body: "Fast and easy"})
