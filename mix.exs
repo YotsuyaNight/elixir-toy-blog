@@ -14,7 +14,7 @@ defmodule Blog.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {Blog.Application, []},
+      mod: {Blog.Supervisor, []},
       extra_applications: [:logger]
     ]
   end
